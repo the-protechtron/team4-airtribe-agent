@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const { requirePatient } = require('./auth');
 const convo = require('./conversation');
+const { transcribeAudio, synthesizeSpeech } = require('./speech');
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
@@ -17,6 +18,20 @@ function wrap(fn) {
 }
 
 app.get('/health', (req, res) => res.json({ ok: true }));
+
+app.post('/speech/transcribe', requirePatient, express.raw({ type: ['audio/*', 'application/octet-stream'], limit: '10mb' }), wrap(async (req, res) => {
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'audio is required' });
+  const text = await transcribeAudio(req.body);
+  if (!text) return res.status(422).json({ error: 'No speech detected' });
+  res.json({ text });
+}));
+
+app.post('/speech/synthesize', requirePatient, wrap(async (req, res) => {
+  const text = (req.body.text || '').trim();
+  if (!text || text.length > 2000) return res.status(400).json({ error: 'text must be 1-2000 characters' });
+  const audio = await synthesizeSpeech(text);
+  res.type('audio/mpeg').send(Buffer.from(await audio.arrayBuffer()));
+}));
 
 app.post('/conversations/start', requirePatient, wrap(async (req, res) => {
   const language = req.body.language || 'en-IN';

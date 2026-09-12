@@ -28,14 +28,14 @@ separate login.
 - RAG: ~28 curated markdown docs in `ai-service/knowledge_base/`, retrieved by simple keyword-overlap
   scoring (`ai-service/src/rag.js`) — no embeddings model or vector DB, so there's nothing to install
   or download beyond `npm install`.
-- Voice input: the browser's built-in Web Speech API (Chrome/Edge) — no extra key or service needed.
-  Falls back to text-only in unsupported browsers.
+- Voice input: AssemblyAI transcribes browser microphone recordings; ElevenLabs reads AI replies aloud.
+  Both keys stay in the server-side `ai-service` environment.
 
 ## One-time setup
 
 Each service needs a real `.env` file — copy the provided `env.sample.txt` in that service's folder to
-`.env` and fill in the values (you'll need a Gemini API key for `ai-service`, and the **same**
-`JWT_SECRET` value in both `backend/.env` and `ai-service/.env`).
+`.env` and fill in the values (the AI service needs Gemini, AssemblyAI, and ElevenLabs API keys,
+and both server services need the **same** `JWT_SECRET`).
 
 ```
 backend/env.sample.txt      -> backend/.env

@@ -9,8 +9,11 @@ export default function PatientChat() {
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
+  const [speaking, setSpeaking] = useState(null);
+  const [speechError, setSpeechError] = useState('');
   const [report, setReport] = useState(null);
   const bottomRef = useRef(null);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,6 +47,41 @@ export default function PatientChat() {
       setMessages((prev) => [...prev, { sender: 'AGENT', text: 'Sorry, something went wrong. Please try again.' }]);
     } finally {
       setSending(false);
+    }
+  }
+
+  async function transcribeAudio(audio) {
+    const { data } = await aiApi.post('/speech/transcribe', audio, {
+      headers: { 'Content-Type': audio.type || 'application/octet-stream' },
+    });
+    return data.text;
+  }
+
+  async function speakMessage(text, index) {
+    if (audioRef.current) {
+      audioRef.current.audio.pause();
+      URL.revokeObjectURL(audioRef.current.url);
+    }
+    setSpeechError('');
+    setSpeaking(index);
+    try {
+      const { data } = await aiApi.post('/speech/synthesize', { text }, { responseType: 'blob' });
+      const url = URL.createObjectURL(data);
+      const audio = new Audio(url);
+      audioRef.current = { audio, url };
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+        setSpeaking(null);
+      };
+      await audio.play();
+    } catch {
+      if (audioRef.current) {
+        URL.revokeObjectURL(audioRef.current.url);
+        audioRef.current = null;
+      }
+      setSpeaking(null);
+      setSpeechError('Could not play this message aloud');
     }
   }
 
@@ -85,10 +123,22 @@ export default function PatientChat() {
                   }`}
                 >
                   {m.text}
+                  {m.sender === 'AGENT' && (
+                    <button
+                      onClick={() => speakMessage(m.text, i)}
+                      disabled={speaking === i}
+                      className="ml-2 text-teal-700 disabled:opacity-50"
+                      aria-label="Read message aloud"
+                      title="Read aloud"
+                    >
+                      {speaking === i ? '…' : '🔊'}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
             {sending && <div className="text-xs text-gray-400">Assistant is typing...</div>}
+            {speechError && <div className="text-xs text-red-600">{speechError}</div>}
             <div ref={bottomRef} />
           </div>
 
@@ -96,7 +146,7 @@ export default function PatientChat() {
             <ReportPanel report={report} />
           ) : (
             <div className="p-3 border-t">
-              <ChatInputBar language={language} onSend={sendMessage} disabled={sending} />
+              <ChatInputBar onSend={sendMessage} onTranscribe={transcribeAudio} disabled={sending} />
             </div>
           )}
         </div>
