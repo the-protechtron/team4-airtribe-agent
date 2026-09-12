@@ -4,7 +4,7 @@
   "private": true,
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node src/seed.js && node src/server.js",
     "dev": "node src/server.js",
     "seed": "node src/seed.js",
     "prisma:migrate": "prisma migrate dev --name init",
