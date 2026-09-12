@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+}
+
+enum ConversationStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum SenderRole {
+  PATIENT
+  AGENT
+}
+
+enum UrgencyLevel {
+  ROUTINE
+  MODERATE
+  URGENT
+  EMERGENCY
+}
+
+enum ReviewStatus {
+  PENDING
+  REVIEWED
+}
+
+enum NextAction {
+  NONE
+  SCHEDULE_VISIT
+  REFER_TO_HOSPITAL
+  ADVISE_VIA_CHAT
+  MARK_RESOLVED
+}
+
+enum ChatSenderRole {
+  PATIENT
+  DOCTOR
+}
+
+model User {
+  id           String   @id @default(uuid())
+  role         Role
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  phone        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  patient Patient?
+  doctor  Doctor?
+
+  @@map("users")
+}
+
+model Patient {
+  id           String  @id @default(uuid())
+  userId       String  @unique @map("user_id")
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age          Int?
+  gender       String?
+  village      String?
+  languagePref String? @map("language_pref")
+
+  conversations Conversation[]
+  reports       Report[]
+  chatThreads   ChatThread[]
+
+  @@map("patients")
+}
+
+model Doctor {
+  id             String  @id @default(uuid())
+  userId         String  @unique @map("user_id")
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialization String?
+
+  reviewedReports Report[]
+  chatThreads     ChatThread[]
+
+  @@map("doctors")
+}
+
+model Conversation {
+  id        String             @id @default(uuid())
+  patientId String             @map("patient_id")
+  patient   Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  status    ConversationStatus @default(ACTIVE)
+  language  String?
+  startedAt DateTime           @default(now()) @map("started_at")
+  checklist Json?              @map("checklist")
+
+  messages Message[]
+  report   Report?
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         SenderRole
+  text           String
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@map("messages")
+}
+
+model Report {
+  id             String        @id @default(uuid())
+  patientId      String        @map("patient_id")
+  patient        Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  conversationId String        @unique @map("conversation_id")
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  doctorId       String?       @map("doctor_id")
+  doctor         Doctor?       @relation(fields: [doctorId], references: [id])
+  summaryJson    Json          @map("summary_json")
+  doctorNotes    String?       @map("doctor_notes")
+  pdfData        Bytes         @map("pdf_data")
+  urgencyLevel   UrgencyLevel  @map("urgency_level")
+  reviewStatus   ReviewStatus  @default(PENDING) @map("review_status")
+  nextAction     NextAction    @default(NONE) @map("next_action")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@map("reports")
+}
+
+model ChatThread {
+  id        String   @id @default(uuid())
+  patientId String   @map("patient_id")
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId  String   @map("doctor_id")
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  messages ChatMessage[]
+
+  @@unique([patientId, doctorId])
+  @@map("chat_threads")
+}
+
+model ChatMessage {
+  id         String         @id @default(uuid())
+  threadId   String         @map("thread_id")
+  thread     ChatThread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderRole  ChatSenderRole @map("sender_role")
+  text        String
+  createdAt   DateTime       @default(now()) @map("created_at")
+  deliveredAt DateTime?      @default(now()) @map("delivered_at")
+  readAt      DateTime?      @map("read_at")
+
+  @@map("chat_messages")
+}

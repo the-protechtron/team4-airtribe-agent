@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: airtribe
+      POSTGRES_PASSWORD: airtribe
+      POSTGRES_DB: airtribe
+    ports:
+      - "5544:5432"
+    volumes:
+      - airtribe_pgdata:/var/lib/postgresql/data
+
+volumes:
+  airtribe_pgdata:
