@@ -8,7 +8,7 @@ function buildPdfBuffer(patientInfo, summary) {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    doc.fontSize(18).text('Airtribe — Primary Health Condition Report', { underline: true });
+    doc.fontSize(18).text('arogyavaani AI — Primary Health Condition Report', { underline: true });
     doc.moveDown();
     doc.fontSize(12).text(`Patient: ${patientInfo.name ?? '-'}`);
     doc.text(`Age / Gender: ${patientInfo.age ?? '-'} / ${patientInfo.gender ?? '-'}`);

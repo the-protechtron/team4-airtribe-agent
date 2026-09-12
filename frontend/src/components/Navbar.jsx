@@ -7,7 +7,7 @@ export default function Navbar() {
   return (
     <nav className="bg-teal-700 text-white px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-6">
-        <Link to="/" className="font-bold text-lg">Airtribe</Link>
+        <Link to="/" className="font-bold text-lg">arogyavaani AI</Link>
         {user?.role === 'PATIENT' && (
           <>
             <Link to="/patient" className="text-sm hover:underline">AI Intake</Link>

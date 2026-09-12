@@ -1,4 +1,4 @@
-# Airtribe
+# arogyavaani AI
 
 AI-assisted primary health triage for rural areas with limited healthcare infrastructure and a high
 patient-to-doctor ratio. A patient describes their problem in their own language, by voice or text; an
@@ -45,7 +45,7 @@ frontend/env.sample.txt     -> frontend/.env
 
 ### 1. Database
 
-Start Docker Desktop, then from `Airtribe/`:
+Start Docker Desktop, then from the repository root:
 ```
 docker compose up -d
 ```

@@ -54,4 +54,4 @@ app.get('/conversations/:id', requirePatient, wrap(async (req, res) => {
 }));
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Airtribe AI service listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`arogyavaani AI service listening on port ${PORT}`));

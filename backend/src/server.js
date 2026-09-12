@@ -27,4 +27,4 @@ const io = new Server(server, { cors: { origin: process.env.FRONTEND_ORIGIN || '
 setupChatSocket(io);
 
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => console.log(`Airtribe backend listening on port ${PORT}`));
+server.listen(PORT, () => console.log(`arogyavaani AI backend listening on port ${PORT}`));

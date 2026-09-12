@@ -65,7 +65,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-teal-50 px-4">
       <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-teal-800 mb-1">Airtribe</h1>
+        <h1 className="text-2xl font-bold text-teal-800 mb-1">arogyavaani AI</h1>
         <p className="text-sm text-gray-500 mb-6">AI-assisted primary health triage for rural communities</p>
 
         <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
